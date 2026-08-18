@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legend-MD | Pairing Portal</title>
+    <style>
+        body { background-color: #0d1117; color: #00ff66; font-family: monospace; text-align: center; padding-top: 50px; }
+        .box { background: #161b22; border: 2px solid #00ff66; display: inline-block; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,255,102,0.3); }
+        input { padding: 10px; width: 250px; background: #0d1117; border: 1px solid #00ff66; color: #fff; font-size: 16px; text-align: center; border-radius: 5px; margin-bottom: 15px; }
+        button { background: #00ff66; color: #0d1117; border: none; padding: 12px 20px; font-weight: bold; font-size: 16px; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #00cc52; }
+        #codeResult { margin-top: 20px; font-size: 22px; font-weight: bold; color: #ff3333; background: #0d1117; padding: 10px; border: 1px dashed #ff3333; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>💀 LEGEND-MD PAIRING PORTAL 💀</h2>
+        <p>Powered by Legend Hassan</p>
+        <br>
+        <input type="text" id="phone" placeholder="Enter number (e.g. 923xxxxxxxxx)">
+        <br>
+        <button onclick="getPairingCode()">GENERATE CODE</button>
+        <div id="codeResult">STATUS: WAITING...</div>
+    </div>
+
+    <script>
+        async function getPairingCode() {
+            let phone = document.getElementById('phone').value;
+            let resultDiv = document.getElementById('codeResult');
+            if(!phone) {
+                alert('Pehle apna WhatsApp number likhein!');
+                return;
+            }
+            resultDiv.innerText = "Generating Code...";
+            try {
+                let res = await fetch(`/pair?phone=${phone}`);
+                let data = await res.json();
+                if(data.code) {
+                    resultDiv.innerText = "YOUR CODE: " + data.code;
+                } else {
+                    resultDiv.innerText = "Error: " + (data.error || "Try again");
+                }
+            } catch(e) {
+                resultDiv.innerText = "Server Connection Failed!";
+            }
+        }
+    </script>
+</body>
+</html>
