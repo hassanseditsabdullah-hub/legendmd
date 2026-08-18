@@ -9,7 +9,6 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 
 let sock;
-let pairingCodeGlobal = null;
 
 async function startLegendMD() {
     const { state, saveCreds } = await useMultiFileAuthState('legend_session');
@@ -79,28 +78,28 @@ https://whatsapp.com/channel/0029Vb7VcqlBlHpdhAL7f80S
     });
 }
 
-// Web API Route for Pairing Code
+// Fixed Web API Route for Pairing Code without 502 Error
 app.get('/pair', async (req, res) => {
     let phoneNumber = req.query.phone;
     if (!phoneNumber) return res.json({ error: "Number missing!" });
     phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
 
     try {
-        if (!sock || !sock.authState.creds.registered) {
-            // Agar socket ready nahi ya register nahi
+        if (!sock) {
             await startLegendMD();
-            setTimeout(async () => {
-                let code = await sock.requestPairingCode(phoneNumber);
-                code = code?.match(/.{1,4}/g)?.join("-") || code;
-                res.json({ code: code });
-            }, 4000);
-        } else {
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+
+        if (!sock.authState.creds.registered) {
             let code = await sock.requestPairingCode(phoneNumber);
             code = code?.match(/.{1,4}/g)?.join("-") || code;
-            res.json({ code: code });
+            return res.json({ code: code });
+        } else {
+            return res.json({ error: "Bot is already paired and connected!" });
         }
     } catch (err) {
-        res.json({ error: "Failed to generate code. Try again." });
+        console.log("Pairing Error:", err);
+        return res.json({ error: "Failed to generate code. Try again in 10 seconds." });
     }
 });
 
